@@ -1,0 +1,285 @@
+{% extends 'layout/layout_index.html' %}
+{% load static %}
+{% load filters %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container post">
+    <div class="post-card" id="postCard" data-id="{{ post.id }}">
+        <div class="post-content">
+            <h1>{{ post.title }}</h1>
+            <div class="info">
+                <div class="col-6">
+                    {% if post.author.first_name and post.author.first_name %}
+                        <span><a href="#">{{ post.author.first_name|title }} {{ post.author.last_name|title }}</a></span>
+                    {% else %}
+                        <span><a href="#">{{ post.author.username }}</a></span>
+                    {% endif %}
+                    <span>&bullet;</span>
+                    <span>{{ post.body|remove_img|safe|wordcount|reading_time }}</span>
+                    <span>&bullet;</span>
+                    <span>{{ post.created_at }}</span>
+                </div>
+                <div class="col-6 d-flex justify-content-end">
+                    {% if post.init_price == -1 %}
+                        <span>{{ post.ticker }}</span>
+                    {% else %}
+                        <span>{{ post.ticker }}: Posted at {{ post.init_price }} {{ post.currency }}</span>
+                        <span>&nbsp;&bullet;&nbsp;</span>
+                        <span id="arrow"></span>&nbsp;<span id="change">{{ change }}%</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="body">
+                {{ post.body|safe }}
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container social mt-3">
+    <div class="post-card d-flex align-items-center justify-content-end">
+        <span id="likesCount">{{ likes_count }}</span>
+        <form id="form" class="d-flex align-items-center" method="POST">
+            {% csrf_token %}
+            {% if is_liked %}
+                <ion-icon id="likeBtn" class="mx-2" name="heart"></ion-icon>
+            {% else %}
+                <ion-icon id="likeBtn" class="mx-2" name="heart-outline"></ion-icon>
+            {% endif %}
+        </form>
+        <span id="commentsCount">{{ comments_count }}</span>
+        <ion-icon class="mx-2" name="chatbubbles-outline"></ion-icon>
+    </div>
+</div>
+
+<div class="container comment my-3">
+    <div class="post-card post-content">
+        {% if comments_count == 0 %}
+            <h2>Be the first one to comment</h2>
+        {% else %}
+            <h2>Comments</h2>
+        {% endif %}
+        <div class="form-outline">
+            <div class="row">
+                {{ form.body|as_crispy_field }}
+            </div>
+            <div class="row align-items-center justify-content-end">
+                <input class="button" id="mainSubmitCommentButton" type="submit" value="Submit">
+            </div>
+              <div class="row mt-3" id="commentSection">
+                  {% for comment in comments %}
+                      <div class="comment horizontal mt-2" id="{{ comment.id }}">
+                        <div class="row w-100">
+                          <div class="col-10 px-0">
+                            <div class="text">
+                              <div class="meta">
+                                {% if comment.user.first_name %}
+                                    <span><a href="#">{{ comment.user.first_name }} {{ comment.user.last_name }}</a></span>
+                                {% else %}
+                                    <span><a href="#">{{ comment.user.username }}</a></span>
+                                {% endif %}
+                                <span>&bullet;</span>
+                                <span>{{ comment.created_at|date:'M d, Y H:i' }}</span>
+                              </div>
+                              <p id="commentBodyId{{ comment.id }}">{{ comment.body }}</p>
+                            </div>
+                          </div>
+                          <div class="col-2 d-flex justify-content-end px-0">
+                            <div class="row">
+                              {% if user.is_authenticated %}
+                                {% if user.is_staff or user == comment.user %}
+                                <div class="settings d-flex justify-content-end mb-auto px-0">
+                                    <div class="dropdown">
+                                      <ion-icon id="dropdownMenuButton" class="dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" name="ellipsis-vertical-outline"></ion-icon>
+                                      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                        {% if request.user == comment.user %}
+                                          <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editCommentModal{{ comment.id }}">Edit</a>
+                                        {% endif %}
+                                        <a class="dropdown-item red" data-bs-toggle="modal" data-bs-target="#deleteCommentModal{{ comment.id }}">Delete</a>
+                                      </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                              {% endif %}
+                              <div class="reply-btn d-flex justify-content-end align-items-end px-0">
+                                <a class="d-flex align-items-center" id="openRepliesBtn" data-comment-id="{{ comment.id }}"><span class="position-relative top-100 start-0 translate-bottom badge rounded-pill bg-light text-dark" id="replyBadge{{ comment.id }}">{{ comment.comment_replies.all.count }}</span>&nbsp;Reply&nbsp;<ion-icon name="repeat-outline"></ion-icon></a>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="nestedComments" id="nestedComments{{ comment.id }}">
+                          <div class="row">
+                            <div id="div_id_reply_body{{ comment.id }}" class="form-group">
+                              <label for="id_body" class="requiredField">Body<span class="asteriskField">*</span></label>
+                              <div>
+                                <textarea name="body" cols="40" rows="10" class="textarea form-control" required="" id="id_body{{ comment.id }}" data-textarea="{{ comment.id }}"></textarea>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row align-items-center justify-content-end mb-3" id="replyButtonDiv{{ comment.id }}">
+                            <input class="button" id="submitReplyButton" data-comment-id="{{ comment.id }}" type="submit" value="Submit" disabled>
+                          </div>
+                          {% if comment.comment_replies.all %}
+                          <div class="replies-scroll">
+                          {% for reply in comment.comment_replies.all|dictsortreversed:"created_at" %}
+                            <div class="reply horizontal mt-2" id="{{ reply.id }}">
+                              <div class="row w-100">
+                                <div class="col-10 px-0">
+                                  <div class="text">
+                                    <div class="meta">
+                                      {% if reply.user.first_name %}
+                                          <span><a href="#">{{ reply.user.first_name }} {{ reply.user.last_name }}</a></span>
+                                      {% else %}
+                                          <span><a href="#">{{ reply.user.username }}</a></span>
+                                      {% endif %}
+                                      <span>&bullet;</span>
+                                      <span>{{ reply.created_at|date:'M d, Y H:i' }}</span>
+                                    </div>
+                                    <p id="replyBodyId{{ reply.id }}">{{ reply.body }}</p>
+                                  </div>
+                                </div>
+                                <div class="col-2 d-flex justify-content-end px-0">
+                                  <div class="row">
+                                    {% if user.is_authenticated %}
+                                      {% if user.is_staff or user == reply.user %}
+                                      <div class="settings d-flex justify-content-end mb-auto px-0">
+                                          <div class="dropdown">
+                                            <ion-icon id="dropdownMenuButton" class="dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" name="ellipsis-vertical-outline"></ion-icon>
+                                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                              {% if user == reply.user %}
+                                                <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editReplyModal{{ reply.id }}">Edit</a>
+                                              {% endif %}
+                                              <a class="dropdown-item red" data-bs-toggle="modal" data-bs-target="#deleteReplyModal{{ reply.id }}">Delete</a>
+                                            </div>
+                                          </div>
+                                      </div>
+                                      {% endif %}
+                                    {% endif %}
+                                  </div>
+                                </div>
+                              </div> 
+                            </div>
+                            <div class="modal fade" id="deleteReplyModal{{ reply.id }}" tabindex="-1" aria-labelledby="deleteReplyModalLabel" aria-hidden="true">
+                              <div class="modal-dialog">
+                                <div class="modal-content">
+                                  <div class="modal-header">
+                                    <h5 class="modal-title">Confirm action</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                  </div>
+                                  <div class="modal-body">
+                                    <p>Are you sure you want to delete the reply?</p>
+                                  </div>
+                                  <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <a type="button" id="deleteReplyBtn" data-reply-id="{{ reply.id }}" class="btn btn-primary" data-bs-dismiss="modal">Delete</a>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="modal fade" id="editReplyModal{{ reply.id }}" tabindex="-1" aria-labelledby="editReplyModalLabel" aria-hidden="true">
+                              <div class="modal-dialog">
+                                <div class="modal-content">
+                                  <div class="modal-header">
+                                    <h5 class="modal-title">Edit reply</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                  </div>
+                                  <div class="modal-body">
+                                    <form>
+                                      <div class="mb-3">
+                                        <label for="body" class="col-form-label">Body:</label>
+                                        <textarea type="text" class="textarea form-control" id="bodyReply{{ reply.id }}" data-edit-reply-id="{{ reply.id }}">{{ reply.body }}</textarea>
+                                      </div>
+                                    </form>
+                                  </div>
+                                  <div class="modal-footer" id="editReplyFooter{{ reply.id }}">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="button" id="editReplyBtn" data-reply-id="{{ reply.id }}" class="btn btn-primary" data-bs-dismiss="modal">Save</button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          {% endfor %}
+                          </div>
+                          {% endif %}
+                        </div>
+                      </div>
+                      <div class="modal fade" id="deleteCommentModal{{ comment.id }}" tabindex="-1" aria-labelledby="deleteCommentModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                          <div class="modal-content">
+                            <div class="modal-header">
+                              <h5 class="modal-title">Confirm action</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                              <p>Are you sure you want to delete the comment?</p>
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                              <a type="button" id="deleteCommentBtn" data-comment-id="{{ comment.id }}" class="btn btn-primary" data-bs-dismiss="modal">Delete</a>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="modal fade" id="editCommentModal{{ comment.id }}" tabindex="-1" aria-labelledby="editCommentModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                          <div class="modal-content">
+                            <div class="modal-header">
+                              <h5 class="modal-title">Edit comment</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                              <form>
+                                <div class="mb-3">
+                                  <label for="body" class="col-form-label">Body:</label>
+                                  <textarea type="text" class="textarea form-control" id="body{{ comment.id }}" data-edit-comment-id="{{ comment.id }}">{{ comment.body }}</textarea>
+                                </div>
+                              </form>
+                            </div>
+                            <div class="modal-footer" id="editCommentFooter{{ comment.id }}">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                              <button type="button" id="editCommentBtn" data-comment-id="{{ comment.id }}" class="btn btn-primary" data-bs-dismiss="modal">Save</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                  {% endfor %}
+              </div>
+              {% if comments.has_other_pages %}
+                <nav class="pagination-container">
+                  <div class="pagination">
+                      <a class="pagination-first" href="?page=1"><ion-icon name="chevron-back-outline"></ion-icon>1</a>
+                      <span class="pagination-inner">
+                        {% if comments.number|add:'-2' > 0 %}
+                          <a href="?page={{ comments.number|add:'-2' }}" class="btn btn-outline-primary">{{ comments.number|add:'-2' }}</a>
+                        {% else %}
+                          <a class="btn btn-outline-primary none">{{ comments.number }}</a>
+                        {% endif %}
+                        {% if comments.number|add:'-1' > 0 %}
+                          <a href="?page={{ comments.number|add:'-1' }}" class="btn btn-outline-primary">{{ comments.number|add:'-1' }}</a>
+                        {% else %}
+                          <a class="btn btn-outline-primary none">{{ comments.number }}</a>
+                        {% endif %}
+                        <a class="btn btn-outline-primary active"><span>{{ comments.number }}</span></a>
+                      
+                        {% if comments.number|add:'1' <= comments.paginator.num_pages %}
+                          <a href="?page={{ comments.number|add:'1' }}" class="btn btn-outline-primary">{{ comments.number|add:'1' }}</a>
+                        {% else %}
+                          <a class="btn btn-outline-primary none">{{ comments.number }}</a>
+                        {% endif %}
+                        {% if comments.number|add:'2' <= comments.paginator.num_pages %}
+                          <a href="?page={{ comments.number|add:'2' }}" class="btn btn-outline-primary">{{ comments.number|add:'2' }}</a>
+                        {% else %}
+                          <a class="btn btn-outline-primary none">{{ comments.number }}</a>
+                        {% endif %}
+                      </span>
+                      <a class="pagination-last" href="?page={{ comments.paginator.num_pages }}">{{ comments.paginator.num_pages }}<ion-icon name="chevron-forward-outline"></ion-icon></a>
+                  </div>
+                </nav>
+              {% endif %}
+        </div>
+    </div>
+</div> 
+<script src="{% static 'js/style.js' %}"></script>
+<script src="{% static 'js/replies.js' %}"></script>
+<!-- <script src="{% static 'js/social.js' %}"></script> -->
+{% endblock %}

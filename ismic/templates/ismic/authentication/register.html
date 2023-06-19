@@ -1,0 +1,64 @@
+{% extends 'layout/layout_auth.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="form-box register-form-box">
+        <div class="form-value">
+            <form action="{% url 'register' %}" method="POST">
+                {% csrf_token %}
+                {% include 'partials/_messages.html'%}
+                <h2>Register</h2>
+                <div class="inputbox">
+                    <ion-icon name="person-outline"></ion-icon>
+                    <input placeholder=" " type="text" name="username" id="usernameField" required value="{{ username }}">
+                    <label for="">Username</label>
+                    <div class="invalid-tooltip" id="invalidUsername" style="display: none;"></div>
+                </div>
+                <div class="inputbox">
+                    <ion-icon name="mail-outline"></ion-icon>
+                    <input placeholder=" " type="email" name="email" id="emailField" required value="{{ email }}">
+                    <label for="">Email</label>
+                    <div class="invalid-tooltip" id="invalidEmail" style="display: none;"></div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="inputbox">
+                            <ion-icon name="person-outline"></ion-icon>
+                            <input placeholder=" " type="text" name="first_name" value="{{ first_name }}">
+                            <label for="">First Name</label>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="inputbox">
+                            <ion-icon name="person-outline"></ion-icon>
+                            <input placeholder=" " type="text" name="last_name" value="{{ last_name }}">
+                            <label for="">Second Name</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="inputbox">
+                            <ion-icon name="eye-outline" id="togglePassword1"></ion-icon>
+                            <input id="passwordField1" placeholder=" " type="password" name="password1" required>
+                            <label for="">Password</label>
+                            <div class="invalid-tooltip" id="invalidPassword1" style="display: none;"></div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="inputbox">
+                            <ion-icon name="eye-outline" id="togglePassword2"></ion-icon>
+                            <input id="passwordField2" placeholder=" " type="password" name="password2" required>
+                            <label for="">Confirm Password</label>
+                            <div class="invalid-tooltip" id="invalidPassword2" style="display: none;"></div>
+                        </div>
+                    </div>
+                </div>
+                <input class="button" id="submitButton" type="submit" value="Register">
+            </form>
+            <hr>
+            <a href="{% url 'login' %}" class="button">I have an account</a>
+            <script src="{% static 'js/register.js' %}"></script>
+        </div>
+    </div>
+{% endblock %}

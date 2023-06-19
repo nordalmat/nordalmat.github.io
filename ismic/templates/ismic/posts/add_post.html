@@ -1,0 +1,32 @@
+{% extends 'layout/layout_index.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+
+{% block content %}
+<div class="container mt-3 mb-5">
+    <h1>Add Post</h1>
+    {% include 'partials/_messages.html'%}
+
+    <form action="{% url 'add-post' %}" method="POST">
+        {% csrf_token %}
+        {{ form.media }}
+        <div class="form-outline mb-3">
+            <div class="row">
+                <div class="col-6">
+                    {{ form.title|as_crispy_field }}
+                </div>
+                <div class="col-6">
+                    {{ form.ticker|as_crispy_field }}
+                </div>
+            </div>
+            <div class="row input-field">
+                {{ form.body|safe }}
+            </div>
+        </div>
+        <input class="button btn-sm" id="submitButton" type="submit" value="Add Post">
+    </form>
+</div>
+
+<script src="{% static 'js/tinymce.js' %}"></script>
+{% endblock %}

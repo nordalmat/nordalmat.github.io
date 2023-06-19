@@ -1,0 +1,161 @@
+{% extends 'layout/layout_index.html' %}
+{% load static %}
+{% load filters %}
+
+
+{% block content %}
+  <div class="section-latest">
+    <div class="container">
+      <div class="row gutter-v1 align-items-stretch mb-5">
+        <div class="col-12">
+          <h2 class="section-title">Latest</h2>
+        </div>
+        <div class="col-md-12 pr-md-5">
+          <div class="row">
+            {% if latest_posts %}
+              {% for post in latest_posts %}
+              <div class="col-12">
+                  <div class="post-entry horizontal d-md-flex">
+                      <div class="media">
+                        <img src="{{ post.image }}" alt="{{ post.ticker }}" class="img-fluid">
+                      </div>
+                      <div class="text">
+                        <div class="meta">
+                          <span>{{ post.created_at|date:'M d, Y H:i' }}</span>
+                          <span>&bullet;</span>
+                          <span>{{ post.body|remove_img|safe|wordcount|reading_time }}</span>
+                        </div>
+                        <h2>{{ post.title }}</h2>
+                        <p class="truncated-body">{{ post.body|remove_img|first_p|safe }}</p>
+                      </div>
+                      {% if user.is_authenticated %}
+                        {% if user.is_staff or user == post.author %}
+                        <div class="settings">
+                            <div class="dropdown">
+                              <ion-icon id="dropdownMenuButton" class="dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" name="ellipsis-vertical-outline"></ion-icon>
+                              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <a class="dropdown-item" href="{% url 'edit-post' post.id %}">Edit</a>
+                                <a class="dropdown-item red" data-bs-toggle="modal" data-bs-target="#deleteModal{{ post.id }}">Delete</a>
+                              </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                      {% endif %}
+                  <a href="{% url 'post-entry' post.id %}"><span class="post-link"></span></a>
+                  </div>
+              </div>
+              <div class="modal fade" id="deleteModal{{ post.id }}" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title">Confirm action</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <p>Are you sure you want to delete <strong>{{ post.title }}</strong>?</p>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                      <a type="button" class="btn btn-primary" href="{% url 'delete-post' post.id %}">Delete</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            {% endif %}
+              {% if latest_posts.has_other_pages %}
+                <nav class="pagination-container">
+                  <div class="pagination">
+                      <a class="pagination-first" href="?page=1"><ion-icon name="chevron-back-outline"></ion-icon>1</a>
+                      <span class="pagination-inner">
+                        {% if latest_posts.number|add:'-2' > 0 %}
+                          <a href="?page={{ latest_posts.number|add:'-2' }}" class="btn btn-outline-primary">{{ latest_posts.number|add:'-2' }}</a>
+                        {% else %}
+                          <a class="btn btn-outline-primary none">{{ latest_posts.number }}</a>
+                        {% endif %}
+                        {% if latest_posts.number|add:'-1' > 0 %}
+                          <a href="?page={{ latest_posts.number|add:'-1' }}" class="btn btn-outline-primary">{{ latest_posts.number|add:'-1' }}</a>
+                        {% else %}
+                          <a class="btn btn-outline-primary none">{{ latest_posts.number }}</a>
+                        {% endif %}
+
+                        <a class="btn btn-outline-primary active"><span>{{ latest_posts.number }}</span></a>
+                      
+                        {% if latest_posts.number|add:'1' <= latest_posts.paginator.num_pages %}
+                          <a href="?page={{ latest_posts.number|add:'1' }}" class="btn btn-outline-primary">{{ latest_posts.number|add:'1' }}</a>
+                        {% else %}
+                          <a class="btn btn-outline-primary none">{{ latest_posts.number }}</a>
+                        {% endif %}
+                        {% if latest_posts.number|add:'2' <= latest_posts.paginator.num_pages %}
+                          <a href="?page={{ latest_posts.number|add:'2' }}" class="btn btn-outline-primary">{{ latest_posts.number|add:'2' }}</a>
+                        {% else %}
+                          <a class="btn btn-outline-primary none">{{ latest_posts.number }}</a>
+                        {% endif %}
+                      </span>
+                      <a class="pagination-last" href="?page={{ latest_posts.paginator.num_pages }}">{{ latest_posts.paginator.num_pages }}<ion-icon name="chevron-forward-outline"></ion-icon></a>
+                  </div>
+                </nav>
+              {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block search_field %}
+<div class="row my-3">
+  <div class="col-6 col-sm-6 col-md-6 col-lg-6 text-start top-menu"></div>
+  <div class="col-6 col-sm-6 col-md-6 col-lg-6 text-end top-menu">
+    <div class="d-inline-flex align-items-center w-50 me-3">
+      <div class="input-group">
+        <input type="text" class="form-control" id="searchField" placeholder="Search">
+        <span class="input-group-text"><span class="icon-search"></span></span>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block carousel %}
+    <div class="container mb-5 slider">
+        <div class="main-slider owl-single owl-carousel">
+          {% for post in carousel_posts %}
+            <div class="huge-article d-md-flex">
+                <div class="img-wrap">
+                  <img src="{{ post.image }}" alt="{{ post.ticker }}" class="img-fluid">
+                </div>
+                <div class="text-wrap">
+                  <div class="meta">
+                    <span class="d-inline-block">{{ post.body|remove_img|safe|wordcount|reading_time }}</span>
+                    <span class="mx-2">&bullet;</span>
+                    <span><a href="#">
+                      {% if post.post_comments.all.count|modulo:10 == 1 %}
+                        {{ post.post_comments.all.count }} Comment
+                      {% else %}
+                        {{ post.post_comments.all.count }} Comments
+                      {% endif %}
+                      </a></span>
+                    <span class="mx-2">&bullet;</span>
+                    <span class="d-inline-block">{{ post.created_at|date:'M d, Y H:i' }}</span>
+                  </div>
+                  <div class="title-body-wrap">
+                    <h3 class="my-2">{{ post.title }}</h3>
+                    <p class="truncated-body">{{ post.body|remove_img|first_p|safe }}</p>
+                  </div>
+                  <div class="author d-flex align-items-center">
+                    <div class="text mt-2">
+                      {% if post.author.first_name and post.author.first_name %}
+                        <h3><span>By </span><a href="#">{{ post.author.first_name|title }} {{ post.author.last_name|title }}</a></h3>
+                      {% else %}
+                        <span>By </span><h3><a href="#"> {{ post.author.username }}</a></h3>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+                <a href="{% url 'post-entry' post.id %}"><span class="post-link"></span></a>
+            </div>
+          {% endfor %}
+        </div>
+    </div>
+{% endblock %}

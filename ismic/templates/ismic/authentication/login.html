@@ -1,0 +1,30 @@
+{% extends 'layout/layout_auth.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="form-box login-form-box">
+        <div class="form-value">
+            <form action="{% url 'login' %}" method="POST">
+                {% csrf_token %}
+                <h2>Login</h2>
+                {% include 'partials/_messages.html'%}
+                <div class="inputbox login-inputbox">
+                    <ion-icon name="mail-outline"></ion-icon>
+                    <input placeholder=" " type="text" name="username" required value="{{ username }}">
+                    <label for="">Username</label>
+                </div>
+                <div class="inputbox login-inputbox">
+                    <ion-icon name="eye-outline" id="togglePassword"></ion-icon>
+                    <input id="passwordField" placeholder=" " type="password" name="password" required>
+                    <label for="">Password</label>
+                </div>
+                <input class="button" id="submitButton" type="submit" value="Log in">
+            </form>
+            <div class="forget">
+                <p><a href="#">Forgot Password?</a></p>
+            </div>
+            <hr>
+            <a href="{% url 'register' %}" class="button">Create an account</a>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,169 @@
+* {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', 'sans-serif';
+}
+
+section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    width: 100%;
+
+    background-image: url('../img/buffetts-road-to-riches-05f95062a9554d688bab91b1c3515a5d.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.login-form-box {
+    margin-left: -700px;
+    position: relative;
+    width: 400px;
+    height: 450px;
+    background: #0054A5;
+    border: 4px solid #fff;
+    border-radius: 20px;
+    backdrop-filter: blur(15px);
+    display: flex;
+    justify-content:center;
+    align-items: center;
+}
+
+.register-form-box {
+  margin-left: -700px;
+  position: relative;
+  width: 600px;
+  height: 600px;
+  background: #0054A5;
+  border: 4px solid #fff;
+  border-radius: 20px;
+  backdrop-filter: blur(15px);
+  display: flex;
+  justify-content:center;
+  align-items: center;
+}
+
+h2 {
+    font-size: 2em;
+    color: #fff;
+    text-align: center;
+}
+
+.invalid-tooltip {
+  right: 0;
+}
+
+.invalid-tooltip p {
+  margin-bottom: 0;
+}
+
+.row {
+  margin-top: -30px;
+  margin-bottom: 0px;
+}
+
+.inputbox {
+    position: relative;
+    margin: 30px 0;
+    border-bottom: 3px solid #fff;
+}
+
+.login-inputbox {
+  width: 310px;
+}
+
+.inputbox label {
+    position: absolute;
+    top: 50%;
+    left: 5px;
+    transform: translateY(-50%);
+    color: #fff;
+    font-size: 1em;
+    pointer-events: none;
+    transition: .5s;
+}
+
+input:focus ~ label, input:not(:placeholder-shown) ~ label {
+    top: -5px;
+    font-size: 14px;
+}
+
+.inputbox input {
+    width: 100%;
+    height: 50px;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 1em;
+    padding: 0 35px 0 5px;
+    color: #fff;
+}
+
+.inputbox ion-icon {
+    position: absolute;
+    right: 8px;
+    color: #fff;
+    font-size: 1.2em;
+    top: 20px;
+}
+
+.forget p a {
+    margin: 15px 0 15px;
+    font-size: .9em;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.forget p a:hover {
+    text-decoration: underline;
+}
+
+hr {
+    border-top: 1px solid #fff;
+    margin: 15px;
+}
+
+.button {
+  appearance: none;
+  background-color: #fff;
+  border: 2px solid #1A1A1A;
+  border-radius: 15px;
+  box-sizing: border-box;
+  color: #3B3B3B;
+  cursor: pointer;
+  display: inline-block;
+  font-size: 1em;
+  font-weight: 600;
+  line-height: normal;
+  margin: 0;
+  outline: none;
+  padding: 16px 24px;
+  text-align: center;
+  text-decoration: none;
+  transition: all 300ms cubic-bezier(.23, 1, 0.32, 1);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  width: 100%;
+  will-change: transform;
+}
+
+.button:disabled {
+  background-color: #e8e8e8;
+  pointer-events: none;
+}
+
+.button:hover {
+  box-shadow: rgba(0, 0, 0, 0.25) 0 8px 15px;
+  transform: translateY(-2px);
+  text-decoration: none;
+  color: #0054A5;
+}
+
+.button:active {
+  box-shadow: none;
+  transform: translateY(0);
+}
